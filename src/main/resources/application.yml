@@ -1,4 +1,6 @@
 spring:
+  profiles:
+    active: dev
   mvc:
     path match:
       matching-strategy: ANT_PATH_MATCHER

@@ -2,6 +2,7 @@ package com.lilibozhi.friends.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -13,6 +14,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 @Configuration
 @EnableSwagger2WebMvc
+@Profile({"dev"})
 public class SwaggerConfig {
     @Bean(value = "defaultApi2")
     public Docket defaultApi2(){
@@ -20,7 +22,7 @@ public class SwaggerConfig {
                 .apiInfo(apiInfo())
                 .select()
                 //这里一定要标注你控制器的位置
-                .apis(RequestHandlerSelectors.basePackage("com.lilibozhi.usercenter.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.lilibozhi.friends.controller"))
                 .paths(PathSelectors.any())
                 .build();
     }
@@ -31,10 +33,10 @@ public class SwaggerConfig {
      */
     private ApiInfo apiInfo(){
         return new ApiInfoBuilder()
-                .title("鱼皮用户中心")
-                .description("鱼皮用户中心文档")
-                .termsOfServiceUrl("https://github.com/liyupi")
-                .contact(new Contact("yupi","https://github.com/liyupi","1212121@qq.com"))
+                .title("lilibozhi用户中心")
+                .description("lilibozhi用户中心文档")
+                .termsOfServiceUrl("https://github.com/libozhiztms")
+                .contact(new Contact("lilibozhi","https://github.com/libozhiztms","3076474518@qq.com"))
                 .version("1.0")
                 .build();
     }
