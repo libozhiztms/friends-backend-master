@@ -1,8 +1,8 @@
-package com.lilibozhi.usercenter.exception;
+package com.lilibozhi.friends.exception;
 
-import com.lilibozhi.usercenter.common.BaseResponse;
-import com.lilibozhi.usercenter.common.ErrorCode;
-import com.lilibozhi.usercenter.common.ResultUtils;
+import com.lilibozhi.friends.common.BaseResponse;
+import com.lilibozhi.friends.common.ErrorCode;
+import com.lilibozhi.friends.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

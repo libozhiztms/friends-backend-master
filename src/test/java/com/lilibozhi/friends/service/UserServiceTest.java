@@ -1,11 +1,13 @@
-package com.lilibozhi.usercenter.service;
+package com.lilibozhi.friends.service;
 
-import com.lilibozhi.usercenter.model.domain.User;
+import com.lilibozhi.friends.model.domain.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
+import java.util.List;
 
 @SpringBootTest
 class UserServiceTest {
@@ -60,5 +62,12 @@ class UserServiceTest {
         result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
         Assertions.assertTrue(result > 0);
 
+    }
+
+    @Test
+    void searchUserByTags() {
+        List<String> tagNameList = Arrays.asList("java", "python");
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        Assertions.assertNotNull(userList);
     }
 }

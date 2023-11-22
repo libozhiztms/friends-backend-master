@@ -1,7 +1,7 @@
-package com.lilibozhi.usercenter.exception;
+package com.lilibozhi.friends.exception;
 
 
-import com.lilibozhi.usercenter.common.ErrorCode;
+import com.lilibozhi.friends.common.ErrorCode;
 
 /**
  * 自定义异常类

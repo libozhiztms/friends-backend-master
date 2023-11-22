@@ -1,14 +1,14 @@
-package com.lilibozhi.usercenter.controller;
+package com.lilibozhi.friends.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.lilibozhi.usercenter.common.BaseResponse;
-import com.lilibozhi.usercenter.common.ErrorCode;
-import com.lilibozhi.usercenter.common.ResultUtils;
-import com.lilibozhi.usercenter.exception.BusinessException;
-import com.lilibozhi.usercenter.model.domain.User;
-import com.lilibozhi.usercenter.model.domain.request.UserLoginRequest;
-import com.lilibozhi.usercenter.model.domain.request.UserRegisterRequest;
-import com.lilibozhi.usercenter.service.UserService;
+import com.lilibozhi.friends.common.BaseResponse;
+import com.lilibozhi.friends.common.ErrorCode;
+import com.lilibozhi.friends.common.ResultUtils;
+import com.lilibozhi.friends.exception.BusinessException;
+import com.lilibozhi.friends.model.domain.User;
+import com.lilibozhi.friends.model.domain.request.UserLoginRequest;
+import com.lilibozhi.friends.model.domain.request.UserRegisterRequest;
+import com.lilibozhi.friends.service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.lilibozhi.usercenter.constant.UserConstant.ADMIN_ROLE;
-import static com.lilibozhi.usercenter.constant.UserConstant.USER_LOGIN_STATE;
+import static com.lilibozhi.friends.constant.UserConstant.ADMIN_ROLE;
+import static com.lilibozhi.friends.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户接口

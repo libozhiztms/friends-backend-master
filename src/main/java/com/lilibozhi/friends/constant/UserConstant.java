@@ -1,4 +1,4 @@
-package com.lilibozhi.usercenter.constant;
+package com.lilibozhi.friends.constant;
 
 /**
  * 用户常量

@@ -1,4 +1,4 @@
-package com.lilibozhi.usercenter.model.domain;
+package com.lilibozhi.friends.model.domain;
 
 import com.baomidou.mybatisplus.annotation.*;
 

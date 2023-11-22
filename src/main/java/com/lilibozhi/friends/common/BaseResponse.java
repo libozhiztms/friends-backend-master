@@ -1,4 +1,4 @@
-package com.lilibozhi.usercenter.common;
+package com.lilibozhi.friends.common;
 
 import lombok.Data;
 

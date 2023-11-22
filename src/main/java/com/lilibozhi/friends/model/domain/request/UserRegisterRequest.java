@@ -1,4 +1,4 @@
-package com.lilibozhi.usercenter.model.domain.request;
+package com.lilibozhi.friends.model.domain.request;
 
 import lombok.Data;
 

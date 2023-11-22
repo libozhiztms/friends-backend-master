@@ -1,4 +1,4 @@
-package com.lilibozhi.usercenter;
+package com.lilibozhi.friends;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
