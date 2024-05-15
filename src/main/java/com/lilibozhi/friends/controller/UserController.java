@@ -1,6 +1,7 @@
 package com.lilibozhi.friends.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lilibozhi.friends.common.BaseResponse;
 import com.lilibozhi.friends.common.ErrorCode;
 import com.lilibozhi.friends.common.ResultUtils;
@@ -10,6 +11,7 @@ import com.lilibozhi.friends.model.domain.request.UserLoginRequest;
 import com.lilibozhi.friends.model.domain.request.UserRegisterRequest;
 import com.lilibozhi.friends.service.UserService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -27,6 +29,7 @@ import static com.lilibozhi.friends.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:3000",allowCredentials = "true")
 public class UserController {
 
     @Resource
@@ -43,14 +46,14 @@ public class UserController {
 
         //校验
         if (userRegisterRequest == null) {
-          throw new BusinessException(ErrorCode.PARAMS_ERROR,"请求参数为空");
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         String planetCode = userRegisterRequest.getPlanetCode();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-           throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         long userId = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
         return ResultUtils.success(userId);
@@ -127,6 +130,7 @@ public class UserController {
     }
 
 
+
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (!isAdmin(request)) {
@@ -153,6 +157,44 @@ public class UserController {
             return false;
         }
         return true;
+    }
+
+    @GetMapping("search/tags")
+    public BaseResponse<List<User>> searchUserByTags(@RequestParam(required = false) List<String> tagNameList) {
+        if (CollectionUtils.isEmpty(tagNameList)) {
+            return ResultUtils.error(ErrorCode.PARAMS_ERROR);
+        }
+        List<User> userList = userService.searchUsersByTags(tagNameList);
+        return ResultUtils.success(userList);
+    }
+
+    /**
+     * 更新用户信息
+     * @param user
+     * @param request
+     * @return
+     */
+    @PostMapping("/update")
+    public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request) {
+       // 1. 校验参数是否为空
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User loginUser = userService.getCurrentUser(request);
+        int result = userService.updateUser(user, loginUser);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 推荐页面
+     * @param request
+     * @return
+     */
+    @GetMapping("/recommend")
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request){
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        Page<User> userList = userService.page(new Page<>(pageNum,pageSize),queryWrapper);
+        return ResultUtils.success(userList);
     }
 
 }
