@@ -226,6 +226,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 更新用户信息
+     *
      * @param user
      * @param loginUser
      * @return
@@ -252,6 +253,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 是否为管理员
+     *
      * @param request
      * @return
      */
@@ -265,6 +267,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 是否为管理员
+     *
      * @param loginUser
      * @return
      */
@@ -275,13 +278,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     /**
      * 获取当前用户
+     *
      * @param request
      * @return
      */
     @Override
-    public User getCurrentUser(HttpServletRequest request) {
+    public User getLoginUser(HttpServletRequest request) {
         if (request == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            //return null;
         }
         User user = (User) request.getSession().getAttribute(USER_LOGIN_STATE);
         if (user == null) {

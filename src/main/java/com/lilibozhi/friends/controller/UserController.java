@@ -10,13 +10,17 @@ import com.lilibozhi.friends.model.domain.User;
 import com.lilibozhi.friends.model.domain.request.UserLoginRequest;
 import com.lilibozhi.friends.model.domain.request.UserRegisterRequest;
 import com.lilibozhi.friends.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.lilibozhi.friends.constant.UserConstant.ADMIN_ROLE;
@@ -29,11 +33,15 @@ import static com.lilibozhi.friends.constant.UserConstant.USER_LOGIN_STATE;
  */
 @RestController
 @RequestMapping("/user")
-@CrossOrigin(origins = "http://localhost:3000",allowCredentials = "true")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
+@Slf4j
 public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     /**
      * 用户注册
@@ -130,7 +138,6 @@ public class UserController {
     }
 
 
-
     @PostMapping("/delete")
     public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
         if (!isAdmin(request)) {
@@ -170,20 +177,22 @@ public class UserController {
 
     /**
      * 更新用户信息
+     *
      * @param user
      * @param request
      * @return
      */
     @PostMapping("/update")
     public BaseResponse<Integer> updateUser(@RequestBody User user, HttpServletRequest request) {
-       // 1. 校验参数是否为空
+        // 1. 校验参数是否为空
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        User loginUser = userService.getCurrentUser(request);
+        User loginUser = userService.getLoginUser(request);
         int result = userService.updateUser(user, loginUser);
         return ResultUtils.success(result);
     }
+
 
     /**
      * 推荐页面
@@ -191,10 +200,26 @@ public class UserController {
      * @return
      */
     @GetMapping("/recommend")
-    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request){
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        Page<User> userList = userService.page(new Page<>(pageNum,pageSize),queryWrapper);
-        return ResultUtils.success(userList);
+    public BaseResponse<Page<User>> recommendUsers(long pageSize,long pageNum, HttpServletRequest request){
+        User loginUser = userService.getLoginUser(request);
+        String redisKey = String.format("friends:user:recommend:%s", loginUser.getId());
+        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        //如果有缓存，直接读缓存
+        Page<User> userPage= (Page<User>)valueOperations.get(redisKey);
+        if (userPage!=null){
+            return ResultUtils.success(userPage);
+        }
+        //无缓存，查数据库
+        QueryWrapper<User> queryWrapper = new QueryWrapper< >();
+        userPage = userService.page(new Page<>(pageNum, pageSize), queryWrapper);
+        //写缓存
+        try {
+            valueOperations.set(redisKey,userPage,30000, TimeUnit.MILLISECONDS);
+        }catch (Exception e){
+            log.error("redis set key error",e);
+        }
+        return ResultUtils.success(userPage);
     }
+
 
 }

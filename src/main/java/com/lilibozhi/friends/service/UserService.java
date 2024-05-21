@@ -73,11 +73,11 @@ public interface UserService extends IService<User> {
     boolean isAdmin(User loginUser);
 
     /**
-     * 获取当前用户
+     * 获取当前用户登陆信息
      * @param request
      * @return
      */
-    User getCurrentUser(HttpServletRequest request);
+    User getLoginUser(HttpServletRequest request);
 
     /**
      * 更新用户信息
