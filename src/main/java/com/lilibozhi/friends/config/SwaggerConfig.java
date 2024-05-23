@@ -33,8 +33,8 @@ public class SwaggerConfig {
      */
     private ApiInfo apiInfo(){
         return new ApiInfoBuilder()
-                .title("lilibozhi用户中心")
-                .description("lilibozhi用户中心文档")
+                .title("lilibozhi伙伴匹配系统")
+                .description("lilibozhi伙伴匹配系统文档")
                 .termsOfServiceUrl("https://github.com/libozhiztms")
                 .contact(new Contact("lilibozhi","https://github.com/libozhiztms","3076474518@qq.com"))
                 .version("1.0")

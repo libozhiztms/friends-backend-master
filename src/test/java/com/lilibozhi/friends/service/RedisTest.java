@@ -2,7 +2,9 @@
 package com.lilibozhi.friends.service;
 
 import com.lilibozhi.friends.model.domain.User;
+
 import org.junit.jupiter.api.Assertions;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
