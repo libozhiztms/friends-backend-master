@@ -4,7 +4,6 @@ import com.lilibozhi.friends.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.util.Objects;
 
 /**
  * 队伍查询封装类
@@ -43,4 +42,9 @@ public class TeamQuery extends PageRequest {
      * 0 - 公开，1 - 私有，2 - 加密
      */
     private Integer status;
+
+    /**
+     * 搜索关键字（同时对队伍名称和描述搜索）
+     */
+    private String searchText;
 }

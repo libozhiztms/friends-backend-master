@@ -3,6 +3,12 @@ package com.lilibozhi.friends.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.lilibozhi.friends.model.domain.Team;
 import com.lilibozhi.friends.model.domain.User;
+import com.lilibozhi.friends.model.domain.request.TeamJoinRequest;
+import com.lilibozhi.friends.model.domain.request.TeamUpdateRequest;
+import com.lilibozhi.friends.model.dto.TeamQuery;
+import com.lilibozhi.friends.model.vo.TeamUserVO;
+
+import java.util.List;
 
 /**
 * @author lilibozhi
@@ -19,4 +25,29 @@ public interface TeamService extends IService<Team> {
      * @return
      */
     long addTeam(Team team, User loginUser);
+
+    /**
+     * 查询队伍
+     * @param teamQuery
+     * @param isAdmin
+     * @return
+     */
+    List<TeamUserVO> listTeams(TeamQuery teamQuery,boolean isAdmin);
+
+    /**
+     * 修改队伍
+     * @param teamUpdateRequest
+     * @param loginUser
+     * @return
+     */
+    boolean updateTeam(TeamUpdateRequest teamUpdateRequest,User loginUser);
+
+    /**
+     * 加入队伍
+     * @param teamJoinRequest
+     * @param loginUser
+     * @return
+     */
+    boolean joinTeam(TeamJoinRequest teamJoinRequest,User loginUser);
+
 }
