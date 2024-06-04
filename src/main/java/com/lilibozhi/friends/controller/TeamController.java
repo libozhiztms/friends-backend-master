@@ -165,6 +165,13 @@ public class TeamController {
             });
         } catch (Exception e) {
         }
+        // 3、查询已加入队伍的人数
+        QueryWrapper<UserTeam> userTeamJoinQueryWrapper = new QueryWrapper<>();
+        userTeamJoinQueryWrapper.in("teamId", teamIdList);
+        List<UserTeam> userTeamList = userTeamService.list(userTeamJoinQueryWrapper);
+        // 队伍 id => 加入这个队伍的用户列表
+        Map<Long, List<UserTeam>> teamIdUserTeamList = userTeamList.stream().collect(Collectors.groupingBy(UserTeam::getTeamId));
+        teamList.forEach(team -> team.setHasJoinNum(teamIdUserTeamList.getOrDefault(team.getId(), new ArrayList<>()).size()));
         return ResultUtils.success(teamList);
     }
 
@@ -236,21 +243,26 @@ public class TeamController {
         if (teamQuery == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-
         User loginUser = userService.getLoginUser(request);
         QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userId", loginUser.getId());
         List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
-        //取出不重复队伍的id
-        //teamId userId
+        // 取出不重复的队伍 id
+        // teamId userId
+        // 1, 2
+        // 1, 3
+        // 2, 3
+        // result
+        // 1 => 2, 3
+        // 2 => 3
         Map<Long, List<UserTeam>> listMap = userTeamList.stream()
                 .collect(Collectors.groupingBy(UserTeam::getTeamId));
         List<Long> idList = new ArrayList<>(listMap.keySet());
         teamQuery.setIdList(idList);
         List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
         return ResultUtils.success(teamList);
-
     }
-
-
 }
+
+
+
