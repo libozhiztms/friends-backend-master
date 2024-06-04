@@ -19,12 +19,12 @@ import com.lilibozhi.friends.model.vo.UserVO;
 import com.lilibozhi.friends.service.TeamService;
 import com.lilibozhi.friends.service.UserService;
 import com.lilibozhi.friends.service.UserTeamService;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
+
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -143,10 +143,13 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
             if (id != null && id > 0) {
                 queryWrapper.eq("id", id);
             }
-
+            List<Long> idList = teamQuery.getIdList();
+            if(CollectionUtils.isNotEmpty(idList)){
+                queryWrapper.in("id",idList);
+            }
             String searchText = teamQuery.getSearchText();
             if (StringUtils.isNotBlank(searchText)) {
-                queryWrapper.and(qw -> qw.like("name", searchText).or().like("expireTime", searchText));
+                queryWrapper.and(qw -> qw.like("name", searchText).or().like("description", searchText));
             }
             String name = teamQuery.getName();
             if (StringUtils.isNotBlank(name)) {
@@ -356,16 +359,16 @@ public class TeamServiceImpl extends ServiceImpl<TeamMapper, Team>
         Team team = getTeamById(id);
         Long teamId = team.getId();
         //校验用户是不是队长
-        if(!team.getUserId().equals(loginUser.getId())){
-            throw new BusinessException(ErrorCode.NO_AUTH,"无访问权限");
+        if (!team.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "无访问权限");
         }
 
         //移除所有加入队伍的关系
         QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
-        userTeamQueryWrapper.eq("teamId",teamId);
+        userTeamQueryWrapper.eq("teamId", teamId);
         boolean result = userTeamService.remove(userTeamQueryWrapper);
-        if(!result){
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"删除队伍关联信息失败");
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除队伍关联信息失败");
         }
         //删除队伍
         return this.removeById(teamId);

@@ -196,30 +196,46 @@ public class UserController {
 
     /**
      * 推荐页面
+     *
      * @param request
      * @return
      */
     @GetMapping("/recommend")
-    public BaseResponse<Page<User>> recommendUsers(long pageSize,long pageNum, HttpServletRequest request){
+    public BaseResponse<Page<User>> recommendUsers(long pageSize, long pageNum, HttpServletRequest request) {
         User loginUser = userService.getLoginUser(request);
         String redisKey = String.format("friends:user:recommend:%s", loginUser.getId());
-        ValueOperations<String,Object> valueOperations = redisTemplate.opsForValue();
+        ValueOperations<String, Object> valueOperations = redisTemplate.opsForValue();
         //如果有缓存，直接读缓存
-        Page<User> userPage= (Page<User>)valueOperations.get(redisKey);
-        if (userPage!=null){
+        Page<User> userPage = (Page<User>) valueOperations.get(redisKey);
+        if (userPage != null) {
             return ResultUtils.success(userPage);
         }
         //无缓存，查数据库
-        QueryWrapper<User> queryWrapper = new QueryWrapper< >();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         userPage = userService.page(new Page<>(pageNum, pageSize), queryWrapper);
         //写缓存
         try {
-            valueOperations.set(redisKey,userPage,30000, TimeUnit.MILLISECONDS);
-        }catch (Exception e){
-            log.error("redis set key error",e);
+            valueOperations.set(redisKey, userPage, 30000, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            log.error("redis set key error", e);
         }
         return ResultUtils.success(userPage);
     }
 
+    /**
+     * 获取最匹配的用户
+     *
+     * @param num
+     * @param request
+     * @return
+     */
+    @GetMapping("/match")
+    public BaseResponse<List<User>> matchUsers(long num, HttpServletRequest request) {
+        if (num <= 0 || num > 20) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getLoginUser(request);
+        return ResultUtils.success(userService.matchUsers(num, user));
+    }
 
 }

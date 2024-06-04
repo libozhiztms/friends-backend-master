@@ -4,11 +4,13 @@ package com.lilibozhi.friends.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.lilibozhi.friends.common.BaseResponse;
+import com.lilibozhi.friends.common.DeleteRequest;
 import com.lilibozhi.friends.common.ErrorCode;
 import com.lilibozhi.friends.common.ResultUtils;
 import com.lilibozhi.friends.exception.BusinessException;
 import com.lilibozhi.friends.model.domain.Team;
 import com.lilibozhi.friends.model.domain.User;
+import com.lilibozhi.friends.model.domain.UserTeam;
 import com.lilibozhi.friends.model.domain.request.TeamAddRequest;
 import com.lilibozhi.friends.model.domain.request.TeamJoinRequest;
 import com.lilibozhi.friends.model.domain.request.TeamQuitRequest;
@@ -17,6 +19,7 @@ import com.lilibozhi.friends.model.dto.TeamQuery;
 import com.lilibozhi.friends.model.vo.TeamUserVO;
 import com.lilibozhi.friends.service.TeamService;
 import com.lilibozhi.friends.service.UserService;
+import com.lilibozhi.friends.service.UserTeamService;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.BeanUtils;
@@ -24,7 +27,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -41,8 +49,10 @@ public class TeamController {
     private UserService userService;
 
     @Resource
-
     private TeamService teamService;
+
+    @Resource
+    private UserTeamService userTeamService;
 
     @PostMapping("/add")
     public BaseResponse<Long> addTeam(@RequestBody TeamAddRequest teamAddRequest, HttpServletRequest request) {
@@ -71,13 +81,14 @@ public class TeamController {
 //        return ResultUtils.success(true);
 //    }
     @PostMapping("/delete")
-    public BaseResponse<Boolean> deleteTeam(@RequestBody long id,HttpServletRequest request) {
-        if (id <= 0) {
+    public BaseResponse<Boolean> deleteTeam(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
+        long id = deleteRequest.getId();
         User loginUser = userService.getLoginUser(request);
-
-        boolean result = teamService.deleteTeam(id,loginUser);
+        boolean result = teamService.deleteTeam(id, loginUser);
 
         if (!result) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "删除失败");
@@ -101,7 +112,7 @@ public class TeamController {
     }
 
     @GetMapping("/get")
-    public BaseResponse<Team> getTeamById(@RequestBody long id) {
+    public BaseResponse<Team> getTeamById(long id) {
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -136,8 +147,24 @@ public class TeamController {
         }
 
         boolean isAdmin = userService.isAdmin(request);
+        //1、查询队伍列表
         List<TeamUserVO> teamList = teamService.listTeams(teamQuery, isAdmin);
-
+        final List<Long> teamIdList = teamList.stream().map(TeamUserVO::getId).collect(Collectors.toList());
+        //2、判断当前用户是否已经加入队伍
+        QueryWrapper<UserTeam> userTeamQueryWrapper = new QueryWrapper<>();
+        try {
+            User loginUser = userService.getLoginUser(request);
+            userTeamQueryWrapper.eq("userId", loginUser.getId());
+            userTeamQueryWrapper.in("teamId", teamIdList);
+            List<UserTeam> userTeamList = userTeamService.list(userTeamQueryWrapper);
+            //已加入的队伍 id 集合
+            Set<Long> hasJoinTeamIdSet = userTeamList.stream().map(UserTeam::getTeamId).collect(Collectors.toSet());
+            teamList.forEach(team -> {
+                boolean hasJoin = hasJoinTeamIdSet.contains(team.getId());
+                team.setHasJoin(hasJoin);
+            });
+        } catch (Exception e) {
+        }
         return ResultUtils.success(teamList);
     }
 
@@ -176,4 +203,54 @@ public class TeamController {
         boolean result = teamService.quitTeam(teamQuitRequest, loginUser);
         return ResultUtils.success(result);
     }
+
+    /**
+     * 获取我创建的队伍
+     *
+     * @param teamQuery
+     * @param request
+     * @return
+     */
+    @GetMapping("/list/my/create")
+    public BaseResponse<List<TeamUserVO>> listMyCreateTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        User loginUser = userService.getLoginUser(request);
+        teamQuery.setUserId(loginUser.getId());
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(teamList);
+    }
+
+
+    /**
+     * 获取我加入的队伍
+     *
+     * @param teamQuery
+     * @param request
+     * @return
+     */
+    @GetMapping("/list/my/join")
+    public BaseResponse<List<TeamUserVO>> listMyJoinTeams(TeamQuery teamQuery, HttpServletRequest request) {
+        if (teamQuery == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        User loginUser = userService.getLoginUser(request);
+        QueryWrapper<UserTeam> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", loginUser.getId());
+        List<UserTeam> userTeamList = userTeamService.list(queryWrapper);
+        //取出不重复队伍的id
+        //teamId userId
+        Map<Long, List<UserTeam>> listMap = userTeamList.stream()
+                .collect(Collectors.groupingBy(UserTeam::getTeamId));
+        List<Long> idList = new ArrayList<>(listMap.keySet());
+        teamQuery.setIdList(idList);
+        List<TeamUserVO> teamList = teamService.listTeams(teamQuery, true);
+        return ResultUtils.success(teamList);
+
+    }
+
+
 }
